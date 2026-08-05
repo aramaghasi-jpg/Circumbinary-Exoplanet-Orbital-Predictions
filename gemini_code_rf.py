@@ -9,7 +9,6 @@ import astropy.units as u
 from scipy.interpolate import griddata, RegularGridInterpolator
 from sklearn.linear_model import LinearRegression
 from sklearn.metrics import mean_absolute_error, r2_score
-from sklearn.preprocessing import StandardScaler
 from sklearn.ensemble import RandomForestRegressor
 from astroquery.vizier import Vizier
 from astropy.coordinates import SkyCoord
@@ -58,13 +57,14 @@ print("Null counts for planet radius:", null_counts_rad_e)
 print("Null counts for star mass:", null_counts_rad)
 print("Null counts for stellar mass:", null_counts_st_mass)
 
-y = refined_data[["pl_orbsmax"]]
-print(y)
+# Split the entire DataFrame first to keep track of test case planet mass and radius
+train_data, test_data = train_test_split(refined_data, test_size=0.2, random_state=42)
 
-x = refined_data[["st_mass", "pl_orbper"]]
-print(x)
+X_train = train_data[["st_mass", "pl_orbper"]]
+y_train = train_data[["pl_orbsmax"]]
 
-X_train, X_test, y_train, y_test = train_test_split(x, y, test_size=0.2)
+X_test = test_data[["st_mass", "pl_orbper"]]
+y_test = test_data[["pl_orbsmax"]]
 
 def winsorize_data(df, lower_percentile=5, upper_percentile=95):
     df_winsorized = df.copy()
@@ -82,33 +82,42 @@ X_test_winsorized = winsorize_data(X_test)
 print("X_train_winsorized dimensions:", X_train_winsorized.shape)
 print("X_test_winsorized dimensions:", X_test_winsorized.shape)
 
-# Initialize the StandardScaler
-scaler = StandardScaler()
-
-# Fit the scaler on the winsorized training data and transform both winsorized training and test data
-X_train_scaled = scaler.fit_transform(X_train_winsorized)
-X_test_scaled = scaler.transform(X_test_winsorized)
-
-print("X_train_scaled dimensions:", X_train_scaled.shape)
-print("X_test_scaled dimensions:", X_test_scaled.shape)
-
-print("X_train dimensions:", X_train.shape)
-print("X_test dimensions:", X_test.shape)
-print("y_train dimensions:", y_train.shape)
-print("y_test dimensions:", y_test.shape)
-
 my_random_forest_model = RandomForestRegressor(max_depth=11, n_estimators=20, random_state=0)
-my_random_forest_model.fit(X_train_scaled, y_train.values.ravel()) # .ravel() to convert y_train to 1D array
-predictions = my_random_forest_model.predict(X_test_scaled)
+# Fit directly on un-scaled, winsorized data
+my_random_forest_model.fit(X_train_winsorized, y_train.values.ravel()) 
+predictions = my_random_forest_model.predict(X_test_winsorized)
 
-mySMA_test = y_test
+mySMA_test = y_test.values.ravel()
 mySMA_predictions = predictions
 
 mySMA_error = mean_absolute_error(mySMA_test, mySMA_predictions)
 mySMA_score = r2_score(mySMA_test, mySMA_predictions)
 
-print("Semimajoral axis error", mySMA_error)
-print("Semimajoral axis score", mySMA_score)
+print("Semimajoral axis error:", mySMA_error)
+print("Semimajoral axis score:", mySMA_score)
+
+# ==========================================
+# ERROR PLOTTING LOGIC
+# ==========================================
+# Calculate absolute error for each test case
+test_errors = np.abs(mySMA_test - mySMA_predictions)
+
+# Retrieve mass and radius for the test cases
+test_masses = test_data["pl_bmasse"]
+test_radii = test_data["pl_rade"]
+
+# Create the plot
+plt.figure(figsize=(10, 6))
+scatter = plt.scatter(test_masses, test_radii, c=test_errors, cmap='coolwarm', alpha=0.8, edgecolor='k')
+plt.colorbar(scatter, label='Absolute Error in Predicted SMA (AU)')
+plt.xscale('log') # Log scale is generally better for exoplanet mass distribution
+plt.yscale('log') # Log scale for radius
+plt.xlabel('Planet Mass (Earth Masses)')
+plt.ylabel('Planet Radius (Earth Radii)')
+plt.title('Model Prediction Error by Planet Mass and Radius')
+plt.grid(True, which="both", ls="--", alpha=0.2)
+plt.show()
+# ==========================================
 
 ip = 0
 data = np.genfromtxt("a_crit_Incl[%i].txt" % ip,delimiter=',',comments='#')  #The data contained in this repository
@@ -151,16 +160,13 @@ a_bin_user = (P_bin_user**2*M_tot_user)**(1./3)
 
 #SMA Evaluation Model
 # Create a DataFrame from user input, matching the structure of X_train
-user_input_df = pd.DataFrame([[Star_1_mass, planet_period]], columns=x.columns)
+user_input_df = pd.DataFrame([[Star_1_mass, planet_period]], columns=X_train.columns)
 
-# Winsorize the user input (using the same function as for training data)
+# Winsorize the user input
 user_input_winsorized = winsorize_data(user_input_df)
 
-# Scale the user input (using the same scaler fitted on training data)
-user_input_scaled = scaler.transform(user_input_winsorized)
-
-# Make prediction
-a_predicted = my_random_forest_model.predict(user_input_scaled)[0]
+# Make prediction directly using unscaled data
+a_predicted = my_random_forest_model.predict(user_input_winsorized)[0]
 print(f"\nPredicted Semimajoral Axis: {a_predicted:.4f} AU")
 
 #CSP Stability Model

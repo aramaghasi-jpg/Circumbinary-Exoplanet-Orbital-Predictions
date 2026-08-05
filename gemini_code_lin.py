@@ -9,8 +9,6 @@ import astropy.units as u
 from scipy.interpolate import griddata, RegularGridInterpolator
 from sklearn.linear_model import LinearRegression
 from sklearn.metrics import mean_absolute_error, r2_score
-from sklearn.preprocessing import StandardScaler
-from sklearn.ensemble import RandomForestRegressor
 from astroquery.vizier import Vizier
 from astropy.coordinates import SkyCoord
 
@@ -24,7 +22,7 @@ exoplanet_data.describe()
 refined_data = exoplanet_data[["pl_orbsmax", "pl_bmasse", "pl_rade", "st_rad", "st_mass", "pl_orbper", "pl_orbeccen"]].copy()
 
 # ==========================================
-# NEW DATA CLEANING & CONVERSION LOGIC
+# DATA CLEANING & CONVERSION LOGIC
 # ==========================================
 
 # 1. Fill missing stellar masses with the mean so Kepler's Third Law can be calculated
@@ -46,25 +44,14 @@ refined_data = refined_data.dropna(subset=['pl_orbsmax'])
 refined_data = refined_data.interpolate()
 refined_data = refined_data.fillna(refined_data.mean())
 
-null_counts_orb = np.sum(refined_data["pl_orbsmax"].isnull())
-null_counts_mass = np.sum(refined_data["pl_bmasse"].isnull())
-null_counts_rad_e = np.sum(refined_data["pl_rade"].isnull())
-null_counts_rad = np.sum(refined_data["st_rad"].isnull())
-null_counts_st_mass = np.sum(refined_data["st_mass"].isnull())
+# Split the entire DataFrame first to keep track of test case planet mass and radius
+train_data, test_data = train_test_split(refined_data, test_size=0.2, random_state=42)
 
-print("Null counts for orbit:", null_counts_orb)
-print("Null counts for mass:", null_counts_mass)
-print("Null counts for planet radius:", null_counts_rad_e)
-print("Null counts for star mass:", null_counts_rad)
-print("Null counts for stellar mass:", null_counts_st_mass)
+X_train = train_data[["st_mass", "pl_orbper"]]
+y_train = train_data[["pl_orbsmax"]]
 
-y = refined_data[["pl_orbsmax"]]
-print(y)
-
-x = refined_data[["st_mass", "pl_orbper"]]
-print(x)
-
-X_train, X_test, y_train, y_test = train_test_split(x, y, test_size=0.2)
+X_test = test_data[["st_mass", "pl_orbper"]]
+y_test = test_data[["pl_orbsmax"]]
 
 def winsorize_data(df, lower_percentile=5, upper_percentile=95):
     df_winsorized = df.copy()
@@ -75,65 +62,72 @@ def winsorize_data(df, lower_percentile=5, upper_percentile=95):
             df_winsorized[col] = np.clip(df[col], lower_bound, upper_bound)
     return df_winsorized
 
-# Apply winsorization to X_train and X_test
+# Apply winsorization
 X_train_winsorized = winsorize_data(X_train)
 X_test_winsorized = winsorize_data(X_test)
 
-print("X_train_winsorized dimensions:", X_train_winsorized.shape)
-print("X_test_winsorized dimensions:", X_test_winsorized.shape)
+# ==========================================
+# NEW MODEL LOGIC: LOG-LINEAR REGRESSION
+# ==========================================
+# Convert inputs and targets to log space to linearize Kepler's 3rd Law
+X_train_log = np.log10(X_train_winsorized)
+X_test_log = np.log10(X_test_winsorized)
+y_train_log = np.log10(y_train)
 
-# Initialize the StandardScaler
-scaler = StandardScaler()
+# Fit a Linear Regression model
+my_linear_model = LinearRegression()
+my_linear_model.fit(X_train_log, y_train_log.values.ravel()) 
 
-# Fit the scaler on the winsorized training data and transform both winsorized training and test data
-X_train_scaled = scaler.fit_transform(X_train_winsorized)
-X_test_scaled = scaler.transform(X_test_winsorized)
+# Predict in log space, then convert back to linear space (AU) using 10^x
+predictions_log = my_linear_model.predict(X_test_log)
+predictions = 10**predictions_log
 
-print("X_train_scaled dimensions:", X_train_scaled.shape)
-print("X_test_scaled dimensions:", X_test_scaled.shape)
-
-print("X_train dimensions:", X_train.shape)
-print("X_test dimensions:", X_test.shape)
-print("y_train dimensions:", y_train.shape)
-print("y_test dimensions:", y_test.shape)
-
-my_random_forest_model = RandomForestRegressor(max_depth=11, n_estimators=20, random_state=0)
-my_random_forest_model.fit(X_train_scaled, y_train.values.ravel()) # .ravel() to convert y_train to 1D array
-predictions = my_random_forest_model.predict(X_test_scaled)
-
-mySMA_test = y_test
+mySMA_test = y_test.values.ravel()
 mySMA_predictions = predictions
 
 mySMA_error = mean_absolute_error(mySMA_test, mySMA_predictions)
 mySMA_score = r2_score(mySMA_test, mySMA_predictions)
 
-print("Semimajoral axis error", mySMA_error)
-print("Semimajoral axis score", mySMA_score)
+print("Semimajor axis error:", mySMA_error)
+print("Semimajor axis score:", mySMA_score)
+print(f"Model Coefficients (Log(Mass), Log(Period)): {my_linear_model.coef_}")
 
+# ==========================================
+# ERROR PLOTTING LOGIC
+# ==========================================
+test_errors = np.abs(mySMA_test - mySMA_predictions)
+test_masses = test_data["pl_bmasse"]
+test_radii = test_data["pl_rade"]
+
+plt.figure(figsize=(10, 6))
+scatter = plt.scatter(test_masses, test_radii, c=test_errors, cmap='coolwarm', alpha=0.8, edgecolor='k')
+plt.colorbar(scatter, label='Absolute Error in Predicted SMA (AU)')
+plt.xscale('log') 
+plt.yscale('log') 
+plt.xlabel('Planet Mass (Earth Masses)')
+plt.ylabel('Planet Radius (Earth Radii)')
+plt.title('Model Prediction Error by Planet Mass and Radius')
+plt.grid(True, which="both", ls="--", alpha=0.2)
+plt.show()
+
+# ==========================================
+# BINARY STAR STABILITY EVALUATION
+# ==========================================
 ip = 0
-data = np.genfromtxt("a_crit_Incl[%i].txt" % ip,delimiter=',',comments='#')  #The data contained in this repository
+data = np.genfromtxt("a_crit_Incl[%i].txt" % ip,delimiter=',',comments='#')
 
-X = data[:,0] #mu
-Y = data[:,1] #e_bin
-Z = data[:,2] #a_c/a_bin
+X_bin = data[:,0] #mu
+Y_bin = data[:,1] #e_bin
+Z_bin = data[:,2] #a_c/a_bin
 
 xi = np.concatenate(([0.001],np.arange(0.01,1,0.01),[0.999]))
 yi = np.arange(0,0.81,0.01)
-zi = griddata((X,Y),Z,(xi[:,None],yi[None,:]),method = 'linear',fill_value=0)  #make the grid
+zi = griddata((X_bin,Y_bin),Z_bin,(xi[:,None],yi[None,:]),method = 'linear',fill_value=0)
 
-f = RegularGridInterpolator((xi, yi), zi) # make the 2d interpolation
+f = RegularGridInterpolator((xi, yi), zi) 
 
 def get_stability_limit(f,mu,e_bin):
     return f([[mu, e_bin]])[0]
-
-M_tot = 0.972 + 1.133 # Total star mass in M_sun
-mu = 0.972/(0.972 + 1.133)  #converting from M_A, M_B --> mu  Pourbaix & Boffin (2016)
-e_bin = 0.524
-P_bin = 79.91
-
-a_bin = (P_bin**2*M_tot)**(1./3)
-
-print("a_c = %1.3f AU" % (get_stability_limit(f,mu,e_bin)*a_bin))
 
 #User inputs
 Star_1_mass = 2.15
@@ -149,21 +143,18 @@ M_tot_user = Star_1_mass + Star_2_mass
 mu_user = Star_1_mass/(Star_1_mass + Star_2_mass)
 a_bin_user = (P_bin_user**2*M_tot_user)**(1./3)
 
-#SMA Evaluation Model
-# Create a DataFrame from user input, matching the structure of X_train
-user_input_df = pd.DataFrame([[Star_1_mass, planet_period]], columns=x.columns)
-
-# Winsorize the user input (using the same function as for training data)
+# SMA Evaluation Model
+user_input_df = pd.DataFrame([[Star_1_mass, planet_period]], columns=X_train.columns)
 user_input_winsorized = winsorize_data(user_input_df)
 
-# Scale the user input (using the same scaler fitted on training data)
-user_input_scaled = scaler.transform(user_input_winsorized)
+# Log-transform the user input, predict, and un-log the result
+user_input_log = np.log10(user_input_winsorized)
+a_predicted_log = my_linear_model.predict(user_input_log)[0]
+a_predicted = 10**a_predicted_log
 
-# Make prediction
-a_predicted = my_random_forest_model.predict(user_input_scaled)[0]
-print(f"\nPredicted Semimajoral Axis: {a_predicted:.4f} AU")
+print(f"\nPredicted Semimajor Axis: {a_predicted:.4f} AU")
 
-#CSP Stability Model
+# CSP Stability Model
 a_c = get_stability_limit(f,mu_user,e_bin_user)*a_bin_user
 print("a_c = %1.3f AU" % (a_c))
 pl_valid = a_c > a_predicted
