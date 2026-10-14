@@ -155,15 +155,21 @@ I would like to give my thanks to my mentor, Grant Regen. He has assisted me in 
 **References:**
 
 \[1\]
+
 Heppenheimer, T. A., 1978, “On the formation of planets in binary star systems.,” Astrophysics Data System [Online]. Available: https://ui.adsabs.harvard.edu/abs/1978A&A....65..421H/abstract. [Accessed: 14-Oct-2026]. 
+
 \[2\]
 Zuckerman, B., 2014, “The occurrence of wide-orbit planets in binary star systems,” Astrophysics Data System [Online]. Available: https://ui.adsabs.harvard.edu/abs/2014ApJ...791L..27Z/abstract. [Accessed: 14-Oct-2026].   
+
 \[3\]
 Heppenheimer, T. A., 2002, “Outline of a theory of planet formation in binary systems ,” ScienceDirect [Online]. Available: https://www.sciencedirect.com/science/article/abs/pii/0019103574900761. [Accessed: 14-Oct-2026]. 
+
 \[4\]
 Quintana, E. V., 2008, “Terrestrial Planet Formation in Binary Star Systems - ads,” Astrophysics Data System [Online]. Available: https://ui.adsabs.harvard.edu/abs/2008ASPC..398..201Q/abstract. [Accessed: 08-Oct-2026].
+
 \[5\]
 Venturini, J., Nigioni, A., Ronco, M. P., Jungo, N., and Emsenhuber, A., 2026, “The Pairs Project: A global formation model for planets in binaries - II. gravitational perturbation effects from secondary stars | Astronomy & Astrophysics (A&A),” Astronomy & Astrophysics [Online]. Available: https://www.aanda.org/articles/aa/abs/2026/04/aa57244-25/aa57244-25.html. [Accessed: 11-Oct-2026].
+
 \[6\]
 Silsbee, K., and Rafikov, R. R., 2021, “Planet formation in stellar binaries: Global simulations of planetesimal growth | Astronomy & Astrophysics (A&A),” Astronomy & Astrophysics [Online]. Available: https://www.aanda.org/articles/aa/full_html/2021/08/aa41139-21/aa41139-21.html. [Accessed: 12-Oct-2026].
     """)
