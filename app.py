@@ -160,4 +160,11 @@ Heppenheimer, T. A., "On the formation of planets in binary star systems." *Astr
 Zuckerman, B., "The Occurrence of Wide-Orbit Planets In Binary Star Systems", Department of Physics and Astronomy, University of California, Los Angeles, CA 90095, USA, 2014.  
 \[3\]
 Heppenheimer, T. A. "Outline of a theory of planet formation in Binary Systems", *Icarus*, 22(4), pp. 436–447, 1974. doi:10.1016/0019-1035(74)90076-1.
+\[4\]
+Quintana, E. V., 2008, “Terrestrial Planet Formation in Binary Star Systems - ads,” Astrophysics Data System [Online]. Available: https://ui.adsabs.harvard.edu/abs/2008ASPC..398..201Q/abstract. [Accessed: 08-Oct-2026].
+\[5\]
+Venturini, J., Nigioni, A., Ronco, M. P., Jungo, N., and Emsenhuber, A., 2026, “The Pairs Project: A global formation model for planets in binaries - II. gravitational perturbation effects from secondary stars | Astronomy & Astrophysics (A&A),” Astronomy & Astrophysics [Online]. Available: https://www.aanda.org/articles/aa/abs/2026/04/aa57244-25/aa57244-25.html. [Accessed: 11-Oct-2026].
+\[6\]
+Silsbee, K., and Rafikov, R. R., 2021, “Planet formation in stellar binaries: Global simulations of planetesimal growth | Astronomy & Astrophysics (A&A),” Astronomy & Atsrophysics [Online]. Available: https://www.aanda.org/articles/aa/full_html/2021/08/aa41139-21/aa41139-21.html. [Accessed: 12-Oct-2026].
     """)
+
