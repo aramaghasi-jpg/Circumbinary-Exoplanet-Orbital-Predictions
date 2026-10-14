@@ -155,7 +155,6 @@ I would like to give my thanks to my mentor, Grant Regen. He has assisted me in 
 **References:**
 
 \[1\]
-
 Heppenheimer, T. A., 1978, “On the formation of planets in binary star systems.,” Astrophysics Data System [Online]. Available: https://ui.adsabs.harvard.edu/abs/1978A&A....65..421H/abstract. [Accessed: 14-Oct-2026]. 
 
 \[2\]
