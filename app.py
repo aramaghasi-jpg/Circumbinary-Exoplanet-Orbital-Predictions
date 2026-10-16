@@ -144,7 +144,7 @@ As both graphs show, the R-squared score and error scores generally tend to star
 
     # --- Paper Section 4 ---
     st.markdown(r"""
-The graphs of the KNeighbors model are quite different from that of the Random Forest Regressor, in the sense that the KNeighbors R-squared and mean absolute error actually seem to improve (more significantly in mean absolute error, as R-squared score decreases from a starting point and never goes higher than it).
+The graphs of the KNeighbors model are quite different from that of the Random Forest Regressor, in the sense that the KNeighbors $R^2$ squared and mean absolute error actually seem to improve (more significantly in mean absolute error, as R-squared score decreases from a starting point and never goes higher than it).
 
 **Conclusion:**  
 Due to my interests in astronomy, I wanted to use this research project to try to do something new, and see if it could work. I had always known about the methods of discovering exoplanets, but I had also always known that it was more difficult for binary star systems. My goal was to make a predictor that could at least somewhat assist in the search for exoplanets in binary star systems. Throughout this process, I have learned about machine models, and how different models work, such as KNeighbors and Random Forest. We could never increase the accuracy of our model, because it is simply not possible. There is simply too little data. If there were thousands of stars in binary systems, then our model would be able to find more realistic patterns for prediction. However, this is not the case. If I were to continue on this project, I would likely change the basis of my research question entirely to something that has much more data connected to it.
