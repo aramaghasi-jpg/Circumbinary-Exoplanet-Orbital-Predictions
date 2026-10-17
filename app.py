@@ -127,7 +127,7 @@ For our regression model, we used multiple different regression models due to th
 **Results/Discussion:**  
 Our model has not yielded good accuracy, and this is something I had a hard time accepting until recently. We measured the accuracy of our model using the two parameters $r^2$ score and error for the determined semimajor axis. $r^2$ score represents how well the model fits the data, and semimajor axis error represents how far off the predicted values for star systems were from their actual values in astronomical units (AU). Since we used multiple models, we got different score values. Despite this, they were still very low. Our $r^2$ score averaged to be massively below one percent to even negative values at some instances. The error was off consistently by four to six astronomical units. For a bit of comparison, red dwarf systems often could fit inside the orbits of the Solar system's rocky planets. For all other star systems which are larger, a four to six AU range of error is similar to the distance between Jupiter and Saturn.  
 
-To get a better understanding of the results, we plotted them in graphs to understand how the accuracy changed as the model took in data. Below are the graphs of R-squared score vs maximum depth, and mean absolute error vs maximum depth (for the Random Forest Regressor).
+To get a better understanding of the results, we plotted them in graphs to understand how the accuracy changed as the model took in data. Below are the graphs of $R^2$ score vs maximum depth, and mean absolute error vs maximum depth (for the Random Forest Regressor).
     """)
 
     # --- Hyperparameter Search Images 1 & 2 ---
@@ -136,7 +136,7 @@ To get a better understanding of the results, we plotted them in graphs to under
 
     # --- Paper Section 3 ---
     st.markdown(r"""
-As both graphs show, the R-squared score and error scores generally tend to start off strong, but then fall off and flatten out. We did a similar graph with the KNeighbors model (`N_neighbors` replaces `Max_Depth`), as seen below.
+As both graphs show, the $R^2$ score and error scores generally tend to start off strong, but then fall off and flatten out. We did a similar graph with the KNeighbors model (`N_neighbors` replaces `Max_Depth`), as seen below.
     """)
 
     # --- Hyperparameter Search Image 3 ---
@@ -144,7 +144,7 @@ As both graphs show, the R-squared score and error scores generally tend to star
 
     # --- Paper Section 4 ---
     st.markdown(r"""
-The graphs of the KNeighbors model are quite different from that of the Random Forest Regressor, in the sense that the KNeighbors $R^2$ squared and mean absolute error actually seem to improve (more significantly in mean absolute error, as R-squared score decreases from a starting point and never goes higher than it).
+The graphs of the KNeighbors model are quite different from that of the Random Forest Regressor, in the sense that the KNeighbors $R^2$ score and mean absolute error actually seem to improve (more significantly in mean absolute error, as $R^2$ score decreases from a starting point and never goes higher than it).
 
 **Conclusion:**  
 Due to my interests in astronomy, I wanted to use this research project to try to do something new, and see if it could work. I had always known about the methods of discovering exoplanets, but I had also always known that it was more difficult for binary star systems. My goal was to make a predictor that could at least somewhat assist in the search for exoplanets in binary star systems. Throughout this process, I have learned about machine models, and how different models work, such as KNeighbors and Random Forest. We could never increase the accuracy of our model, because it is simply not possible. There is simply too little data. If there were thousands of stars in binary systems, then our model would be able to find more realistic patterns for prediction. However, this is not the case. If I were to continue on this project, I would likely change the basis of my research question entirely to something that has much more data connected to it.
